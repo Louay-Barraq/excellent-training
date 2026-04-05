@@ -6,11 +6,13 @@ Application web de gestion de formations pour le centre Excellent Training (Gree
 - **Frontend** : React 18 / Vite / Tailwind CSS
 
 ## Structure
+```
 /excellent-training
 ├── /backend
 ├── /frontend
 ├── /database
 └── /documentation
+```
 
 ## Équipe
 - Binôme 1ère Année Ingénieur — ISI 2025/2026
