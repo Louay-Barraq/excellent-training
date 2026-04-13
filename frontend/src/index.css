@@ -1,1 +1,146 @@
 @import "tailwindcss";
+
+/* ─────────────────────────────────────────────
+   DESIGN SYSTEM — Excellent Training
+   Prism & Charcoal
+   ───────────────────────────────────────────── */
+
+@theme {
+  /* Colors - Mapping to CSS Variables for runtime theme switching */
+  --color-bg-main: var(--color-bg-main);
+  --color-bg-card: var(--color-bg-card);
+  --color-text-main: var(--color-text-main);
+  --color-text-muted: var(--color-text-muted);
+  /* Back-compat aliases used by some pages/components */
+  --color-text-primary: var(--color-text-primary);
+  --color-bg-secondary: var(--color-bg-secondary);
+  --color-accent: var(--color-accent);
+  --color-cyan: var(--color-cyan);
+  --color-lime: var(--color-lime);
+  --color-magenta: var(--color-magenta);
+  --color-danger: var(--color-danger);
+  --color-border: var(--color-border);
+  --color-surface-hover: var(--color-surface-hover);
+
+  /* Fonts */
+  --font-sans: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Syne', sans-serif;
+  --font-inter: 'Inter', sans-serif;
+
+  /* Custom Utilities */
+  --radius-main: 12px;
+  --shadow-prism: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+:root {
+  /* Colors — Prism & Charcoal (Light Mode) */
+  --color-bg-main: #F8FAFC; 
+  --color-bg-card: #FFFFFF;
+  --color-text-main: #0F172A; /* Deep Charcoal */
+  --color-text-muted: #64748B;
+  --color-text-primary: var(--color-text-main);
+  
+  --color-accent: #6366F1;   /* Indigo */
+  --color-cyan: #06B6D4;
+  --color-lime: #ACE600;
+  --color-magenta: #D946EF;
+  
+  --color-danger: #F43F5E; 
+  --color-border: #E2E8F0;
+  --color-surface-hover: #F1F5F9;
+  --color-bg-secondary: var(--color-surface-hover);
+  --skeleton-bg: #E2E8F0;
+}
+
+.dark {
+  /* Colors — Prism & Charcoal (Dark Mode) */
+  --color-bg-main: #020617; /* Slate 950 */
+  --color-bg-card: #0F172A; /* Slate 900 */
+  --color-text-main: #F1F5F9;
+  --color-text-muted: #94A3B8;
+  --color-text-primary: var(--color-text-main);
+  
+  --color-accent: #818CF8;
+  --color-cyan: #22D3EE;
+  --color-lime: #C4FF00;
+  --color-magenta: #F0ABFC;
+  
+  --color-danger: #FB7185;
+  --color-border: #1E293B;
+  --color-surface-hover: #1E293B;
+  --color-bg-secondary: var(--color-surface-hover);
+  --skeleton-bg: #1E293B;
+}
+
+/* Base Styles */
+@layer base {
+  html {
+    @apply antialiased scroll-smooth;
+    background-color: var(--color-bg-main);
+    color: var(--color-text-main);
+  }
+
+  body {
+    @apply min-h-screen font-sans;
+    background-color: var(--color-bg-main);
+    color: var(--color-text-main);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    @apply font-display;
+  }
+}
+
+/* Component Utilities */
+@layer components {
+  .card-prism {
+    @apply bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl transition-all duration-500 overflow-hidden;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  }
+
+  .card-prism:hover {
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    border-color: var(--color-accent);
+  }
+
+  .btn-prism {
+    @apply bg-[var(--color-accent)] text-white font-bold px-6 py-3 rounded-xl transition-all duration-300 
+           hover:shadow-lg hover:shadow-indigo-500/25 active:scale-95 disabled:opacity-50;
+  }
+
+  .btn-prism-outline {
+    @apply border border-[var(--color-border)] bg-[var(--color-bg-card)] text-[var(--color-text-main)] font-bold px-6 py-3 rounded-xl 
+           transition-all duration-300 hover:bg-[var(--color-surface-hover)] active:scale-95;
+  }
+
+  .input-prism {
+    @apply w-full bg-[var(--color-bg-main)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm 
+           focus:ring-4 focus:ring-indigo-500/10 focus:border-[var(--color-accent)] outline-none transition-all;
+  }
+}
+
+/* Animations */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
+}
+
+/* Custom Scrollbar Helper */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
