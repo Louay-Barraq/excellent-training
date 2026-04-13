@@ -22,4 +22,6 @@ public class FormationDTO {
 
     @NotNull(message = "Le domaine est obligatoire")
     private Integer domaineId;
+
+    private Integer formateurId;
 }

@@ -20,11 +20,21 @@ public class FormationService {
     private final FormateurRepository formateurRepository;
     private final ParticipantRepository participantRepository;
 
-    public List<Formation> findAll() {
-        return formationRepository.findAll();
+    public List<FormationResponseDTO> findAll() {
+        return formationRepository.findAll()
+                .stream()
+                .map(this::toResponseDTO)
+                .toList();
     }
 
-    public Formation findById(long id) {
+    public FormationResponseDTO findById(long id) {
+        Formation formation = formationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Formation introuvable avec l'id : " + id));
+        return toResponseDTO(formation);
+    }
+
+    public Formation findEntityById(long id) {
         return formationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Formation introuvable avec l'id : " + id));
@@ -42,11 +52,18 @@ public class FormationService {
         formation.setBudget(dto.getBudget());
         formation.setDomaine(domaine);
 
+        if (dto.getFormateurId() != null) {
+            Formateur formateur = formateurRepository.findById(dto.getFormateurId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Formateur introuvable avec l'id : " + dto.getFormateurId()));
+            formation.setFormateur(formateur);
+        }
+
         return toResponseDTO(formationRepository.save(formation));
     }
 
     public FormationResponseDTO update(long id, FormationDTO dto) {
-        Formation formation = findById(id);
+        Formation formation = findEntityById(id);
 
         Domaine domaine = domaineRepository.findById(dto.getDomaineId())
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -57,6 +74,15 @@ public class FormationService {
         formation.setDuree(dto.getDuree());
         formation.setBudget(dto.getBudget());
         formation.setDomaine(domaine);
+
+        if (dto.getFormateurId() != null) {
+            Formateur formateur = formateurRepository.findById(dto.getFormateurId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Formateur introuvable avec l'id : " + dto.getFormateurId()));
+            formation.setFormateur(formateur);
+        } else {
+            formation.setFormateur(null);
+        }
 
         return toResponseDTO(formationRepository.save(formation));
     }
@@ -70,7 +96,7 @@ public class FormationService {
     }
 
     public FormationResponseDTO affecterFormateur(long formationId, int formateurId) {
-        Formation formation = findById(formationId);
+        Formation formation = findEntityById(formationId);
 
         Formateur formateur = formateurRepository.findById(formateurId)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -82,7 +108,7 @@ public class FormationService {
 
     @Transactional
     public int inscrireParticipants(long formationId, List<Integer> participantIds) {
-        Formation formation = findById(formationId);
+        Formation formation = findEntityById(formationId);
         int count = 0;
 
         for (Integer participantId : participantIds) {
@@ -98,6 +124,16 @@ public class FormationService {
 
         formationRepository.save(formation);
         return count;
+    }
+
+    @Transactional
+    public void desinscrireParticipant(long formationId, int participantId) {
+        Formation formation = findEntityById(formationId);
+        Participant participant = participantRepository.findById(participantId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Participant introuvable avec l'id : " + participantId));
+        formation.removeParticipant(participant);
+        formationRepository.save(formation);
     }
 
     public FormationResponseDTO toResponseDTO(Formation f) {

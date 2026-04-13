@@ -2,8 +2,10 @@ package com.greenbuilding.excellenttraining.controller;
 
 import com.greenbuilding.excellenttraining.dto.FormationDTO;
 import com.greenbuilding.excellenttraining.dto.FormationResponseDTO;
+import com.greenbuilding.excellenttraining.dto.ParticipantResponseDTO;
 import com.greenbuilding.excellenttraining.model.Formation;
 import com.greenbuilding.excellenttraining.service.FormationService;
+import com.greenbuilding.excellenttraining.service.ParticipantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,14 +21,15 @@ import java.util.Map;
 public class FormationController {
 
     private final FormationService formationService;
+    private final ParticipantService participantService;
 
     @GetMapping
-    public ResponseEntity<List<Formation>> findAll() {
+    public ResponseEntity<List<FormationResponseDTO>> findAll() {
         return ResponseEntity.ok(formationService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Formation> findById(@PathVariable long id) {
+    public ResponseEntity<FormationResponseDTO> findById(@PathVariable long id) {
         return ResponseEntity.ok(formationService.findById(id));
     }
 
@@ -65,5 +68,24 @@ public class FormationController {
         return ResponseEntity.ok(Map.of(
                 "message", count + " participant(s) inscrits avec succès",
                 "count", count));
+    }
+
+    @GetMapping("/{id}/participants")
+    public ResponseEntity<List<ParticipantResponseDTO>> getParticipants(
+            @PathVariable long id) {
+        Formation formation = formationService.findEntityById(id);
+        List<ParticipantResponseDTO> participants = formation.getParticipants()
+                .stream()
+                .map(participantService::toResponseDTO)
+                .toList();
+        return ResponseEntity.ok(participants);
+    }
+
+    @DeleteMapping("/{id}/participants/{participantId}")
+    public ResponseEntity<Map<String, Object>> desinscrireParticipant(
+            @PathVariable long id,
+            @PathVariable int participantId) {
+        formationService.desinscrireParticipant(id, participantId);
+        return ResponseEntity.ok(Map.of("message", "Participant désinscrit avec succès"));
     }
 }

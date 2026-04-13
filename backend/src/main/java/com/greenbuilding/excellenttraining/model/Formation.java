@@ -32,7 +32,7 @@ public class Formation {
     private double budget;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_domaine", nullable = false)
+    @JoinColumn(name = "id_domaine")
     private Domaine domaine;
 
     @ManyToOne(fetch = FetchType.LAZY)

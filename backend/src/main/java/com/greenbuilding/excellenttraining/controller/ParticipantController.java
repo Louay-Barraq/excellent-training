@@ -1,6 +1,8 @@
 package com.greenbuilding.excellenttraining.controller;
 
 import com.greenbuilding.excellenttraining.dto.ParticipantDTO;
+import com.greenbuilding.excellenttraining.dto.ParticipantResponseDTO;
+import com.greenbuilding.excellenttraining.dto.FormationResponseDTO;
 import com.greenbuilding.excellenttraining.model.Participant;
 import com.greenbuilding.excellenttraining.service.ParticipantService;
 import jakarta.validation.Valid;
@@ -19,25 +21,30 @@ public class ParticipantController {
     private final ParticipantService participantService;
 
     @GetMapping
-    public ResponseEntity<List<Participant>> findAll() {
+    public ResponseEntity<List<ParticipantResponseDTO>> findAll() {
         return ResponseEntity.ok(participantService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Participant> findById(@PathVariable int id) {
+    public ResponseEntity<ParticipantResponseDTO> findById(@PathVariable int id) {
         return ResponseEntity.ok(participantService.findById(id));
     }
 
+    @GetMapping("/{id}/formations")
+    public ResponseEntity<List<FormationResponseDTO>> listFormations(@PathVariable int id) {
+        return ResponseEntity.ok(participantService.listFormations(id));
+    }
+
     @PostMapping
-    public ResponseEntity<Participant> create(@Valid @RequestBody ParticipantDTO dto) {
+    public ResponseEntity<ParticipantResponseDTO> create(
+            @Valid @RequestBody ParticipantDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(participantService.create(dto));
+                .body(participantService.toResponseDTO(participantService.create(dto)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Participant> update(
-            @PathVariable int id,
-            @Valid @RequestBody ParticipantDTO dto) {
+    public ResponseEntity<ParticipantResponseDTO> update(
+            @PathVariable int id, @Valid @RequestBody ParticipantDTO dto) {
         return ResponseEntity.ok(participantService.update(id, dto));
     }
 

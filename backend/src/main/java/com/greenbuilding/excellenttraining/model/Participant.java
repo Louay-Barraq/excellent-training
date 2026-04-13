@@ -26,10 +26,10 @@ public class Participant {
     private int tel;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_structure", nullable = false)
+    @JoinColumn(name = "id_structure")
     private Structure structure;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_profil", nullable = false)
+    @JoinColumn(name = "id_profil")
     private Profil profil;
 }

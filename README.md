@@ -113,7 +113,7 @@ Avant de lancer le projet, assure-toi d'avoir installé :
 ### 1. Cloner le repository
 
 ```bash
-git clone https://github.com/TON_USERNAME/excellent-training.git
+git clone https://github.com/Louay-Barraq/excellent-training.git
 cd excellent-training
 ```
 
@@ -270,6 +270,6 @@ git checkout -b feat/dashboard-stats
 ## Informations
 - Binômes : Louay Barraq - Maher Majdoub
 - Niveau : 1ère Année Ingénieur IDL 
-- **Institut Supérieur d'Informatique (ISI)** — Université de Tunis El Manar  
-- Année Universitaire **2025/2026**  
+- Institut : **Institut Supérieur d'Informatique (ISI)** — Université de Tunis El Manar  
+- Année Universitaire :**2025/2026**  
 - Date limite de rendu : **30 Avril 2026**

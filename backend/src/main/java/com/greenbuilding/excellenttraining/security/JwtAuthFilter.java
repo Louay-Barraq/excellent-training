@@ -47,19 +47,25 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String role = jwtUtils.extractRole(token);
 
         if (login != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(login);
+            try {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(login);
 
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                    );
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                        );
 
-            authToken.setDetails(new WebAuthenticationDetailsSource()
-                    .buildDetails(request));
+                authToken.setDetails(new WebAuthenticationDetailsSource()
+                        .buildDetails(request));
 
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            } catch (org.springframework.security.core.userdetails.UsernameNotFoundException e) {
+                // If user is not found (e.g. deleted or renamed), we don't set authentication context.
+                // This will naturally lead to a 401 Unauthorized for protected endpoints.
+                logger.warn("Token belongs to a user that no longer exists: " + login);
+            }
         }
 
         filterChain.doFilter(request, response);

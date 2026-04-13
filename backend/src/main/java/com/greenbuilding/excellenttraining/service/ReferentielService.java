@@ -1,16 +1,12 @@
 package com.greenbuilding.excellenttraining.service;
 
 import com.greenbuilding.excellenttraining.dto.ReferentielDTO;
-import com.greenbuilding.excellenttraining.model.Domaine;
-import com.greenbuilding.excellenttraining.model.Profil;
-import com.greenbuilding.excellenttraining.model.Structure;
-import com.greenbuilding.excellenttraining.repository.DomaineRepository;
-import com.greenbuilding.excellenttraining.repository.FormationRepository;
-import com.greenbuilding.excellenttraining.repository.ProfilRepository;
-import com.greenbuilding.excellenttraining.repository.StructureRepository;
+import com.greenbuilding.excellenttraining.model.*;
+import com.greenbuilding.excellenttraining.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,6 +18,9 @@ public class ReferentielService {
     private final StructureRepository structureRepository;
     private final ProfilRepository profilRepository;
     private final FormationRepository formationRepository;
+    private final ParticipantRepository participantRepository;
+    private final EmployeurRepository employeurRepository;
+    private final FormateurRepository formateurRepository;
 
     // ===== DOMAINE =====
     public List<Domaine> findAllDomaines() {
@@ -46,14 +45,17 @@ public class ReferentielService {
         return domaineRepository.save(domaine);
     }
 
+    @Transactional
     public void deleteDomaine(int id) {
         if (!domaineRepository.existsById(id)) {
             throw new EntityNotFoundException(
                     "Domaine introuvable avec l'id : " + id);
         }
-        if (formationRepository.existsByDomaineId(id)) {
-            throw new IllegalArgumentException(
-                    "Impossible de supprimer ce domaine — il est utilisé par une formation");
+        // Force Delete: Unlink from formations
+        List<Formation> formations = formationRepository.findByDomaineId(id);
+        for (Formation f : formations) {
+            f.setDomaine(null);
+            formationRepository.save(f);
         }
         domaineRepository.deleteById(id);
     }
@@ -81,13 +83,20 @@ public class ReferentielService {
         return structureRepository.save(structure);
     }
 
+    @Transactional
     public void deleteStructure(int id) {
-        if (!structureRepository.existsById(id)) {
-            throw new EntityNotFoundException(
-                    "Structure introuvable avec l'id : " + id);
+        if (!structureRepository.existsById(id))
+            throw new EntityNotFoundException("Structure introuvable avec l'id : " + id);
+        
+        // Force Delete: Unlink from participants
+        List<Participant> participants = participantRepository.findByStructureId(id);
+        for (Participant p : participants) {
+            p.setStructure(null);
+            participantRepository.save(p);
         }
         structureRepository.deleteById(id);
     }
+
 
     // ===== PROFIL =====
     public List<Profil> findAllProfils() {
@@ -112,11 +121,54 @@ public class ReferentielService {
         return profilRepository.save(profil);
     }
 
+    @Transactional
     public void deleteProfil(int id) {
-        if (!profilRepository.existsById(id)) {
-            throw new EntityNotFoundException(
-                    "Profil introuvable avec l'id : " + id);
+        if (!profilRepository.existsById(id))
+            throw new EntityNotFoundException("Profil introuvable avec l'id : " + id);
+        
+        // Force Delete: Unlink from participants
+        List<Participant> participants = participantRepository.findByProfilId(id);
+        for (Participant p : participants) {
+            p.setProfil(null);
+            participantRepository.save(p);
         }
         profilRepository.deleteById(id);
+    }
+
+    // ===== EMPLOYEUR =====
+    public List<Employeur> findAllEmployeurs() {
+        return employeurRepository.findAll();
+    }
+
+    public Employeur addEmployeur(ReferentielDTO dto) {
+        if (employeurRepository.existsByNomEmployeur(dto.getLibelle())) {
+            throw new IllegalArgumentException(
+                    "L'employeur '" + dto.getLibelle() + "' existe déjà");
+        }
+        Employeur employeur = new Employeur();
+        employeur.setNomEmployeur(dto.getLibelle());
+        return employeurRepository.save(employeur);
+    }
+
+    public Employeur updateEmployeur(int id, ReferentielDTO dto) {
+        Employeur employeur = employeurRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Employeur introuvable with id : " + id));
+        employeur.setNomEmployeur(dto.getLibelle());
+        return employeurRepository.save(employeur);
+    }
+
+    @Transactional
+    public void deleteEmployeur(int id) {
+        if (!employeurRepository.existsById(id))
+            throw new EntityNotFoundException("Employeur introuvable with id : " + id);
+        
+        // Force Delete: Unlink from formateurs
+        List<Formateur> formateurs = formateurRepository.findByEmployeurId(id);
+        for (Formateur f : formateurs) {
+            f.setEmployeur(null);
+            formateurRepository.save(f);
+        }
+        employeurRepository.deleteById(id);
     }
 }

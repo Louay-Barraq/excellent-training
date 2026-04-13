@@ -36,7 +36,7 @@ public class AuthService {
                 utilisateur.getRole().getNom()
         );
 
-        return new AuthResponseDTO(token, utilisateur.getLogin(),
+        return new AuthResponseDTO(utilisateur.getId(), token, utilisateur.getLogin(),
                 utilisateur.getRole().getNom());
     }
 }

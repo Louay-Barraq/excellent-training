@@ -1,6 +1,7 @@
 package com.greenbuilding.excellenttraining.service;
 
 import com.greenbuilding.excellenttraining.dto.FormateurDTO;
+import com.greenbuilding.excellenttraining.dto.FormateurResponseDTO;
 import com.greenbuilding.excellenttraining.model.Employeur;
 import com.greenbuilding.excellenttraining.model.Formateur;
 import com.greenbuilding.excellenttraining.repository.EmployeurRepository;
@@ -18,11 +19,21 @@ public class FormateurService {
     private final FormateurRepository formateurRepository;
     private final EmployeurRepository employeurRepository;
 
-    public List<Formateur> findAll() {
-        return formateurRepository.findAll();
+    public List<FormateurResponseDTO> findAll() {
+        return formateurRepository.findAll()
+                .stream()
+                .map(this::toResponseDTO)
+                .toList();
     }
 
-    public Formateur findById(int id) {
+    public FormateurResponseDTO findById(int id) {
+        Formateur formateur = formateurRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Formateur introuvable avec l'id : " + id));
+        return toResponseDTO(formateur);
+    }
+
+    public Formateur findEntityById(int id) {
         return formateurRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Formateur introuvable avec l'id : " + id));
@@ -51,8 +62,8 @@ public class FormateurService {
         return formateurRepository.save(formateur);
     }
 
-    public Formateur update(int id, FormateurDTO dto) {
-        Formateur formateur = findById(id);
+    public FormateurResponseDTO update(int id, FormateurDTO dto) {
+        Formateur formateur = findEntityById(id);
 
         if (!formateur.getEmail().equals(dto.getEmail())
                 && formateurRepository.existsByEmail(dto.getEmail())) {
@@ -75,7 +86,7 @@ public class FormateurService {
             formateur.setEmployeur(null);
         }
 
-        return formateurRepository.save(formateur);
+        return toResponseDTO(formateurRepository.save(formateur));
     }
 
     public void delete(int id) {
@@ -84,5 +95,18 @@ public class FormateurService {
                     "Formateur introuvable avec l'id : " + id);
         }
         formateurRepository.deleteById(id);
+    }
+
+    public FormateurResponseDTO toResponseDTO(Formateur f) {
+        FormateurResponseDTO dto = new FormateurResponseDTO();
+        dto.setId(f.getId());
+        dto.setNom(f.getNom());
+        dto.setPrenom(f.getPrenom());
+        dto.setEmail(f.getEmail());
+        dto.setTel(f.getTel());
+        dto.setType(f.getType());
+        dto.setNomEmployeur(f.getEmployeur() != null
+                ? f.getEmployeur().getNomEmployeur() : null);
+        return dto;
     }
 }

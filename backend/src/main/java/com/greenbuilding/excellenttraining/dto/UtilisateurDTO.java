@@ -12,8 +12,6 @@ public class UtilisateurDTO {
     @Size(min = 3, message = "Le login doit avoir au moins 3 caractères")
     private String login;
 
-    @NotBlank(message = "Le mot de passe est obligatoire")
-    @Size(min = 6, message = "Le mot de passe doit avoir au moins 6 caractères")
     private String password;
 
     @NotNull(message = "Le rôle est obligatoire")

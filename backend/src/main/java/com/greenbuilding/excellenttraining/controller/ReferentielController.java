@@ -4,6 +4,7 @@ import com.greenbuilding.excellenttraining.dto.ReferentielDTO;
 import com.greenbuilding.excellenttraining.model.Domaine;
 import com.greenbuilding.excellenttraining.model.Profil;
 import com.greenbuilding.excellenttraining.model.Structure;
+import com.greenbuilding.excellenttraining.model.Employeur;
 import com.greenbuilding.excellenttraining.service.ReferentielService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -92,6 +93,31 @@ public class ReferentielController {
     @DeleteMapping("/profils/{id}")
     public ResponseEntity<Void> deleteProfil(@PathVariable int id) {
         referentielService.deleteProfil(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ===== EMPLOYEURS =====
+    @GetMapping("/employeurs")
+    public ResponseEntity<List<Employeur>> findAllEmployeurs() {
+        return ResponseEntity.ok(referentielService.findAllEmployeurs());
+    }
+
+    @PostMapping("/employeurs")
+    public ResponseEntity<Employeur> addEmployeur(@Valid @RequestBody ReferentielDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(referentielService.addEmployeur(dto));
+    }
+
+    @PutMapping("/employeurs/{id}")
+    public ResponseEntity<Employeur> updateEmployeur(
+            @PathVariable int id,
+            @Valid @RequestBody ReferentielDTO dto) {
+        return ResponseEntity.ok(referentielService.updateEmployeur(id, dto));
+    }
+
+    @DeleteMapping("/employeurs/{id}")
+    public ResponseEntity<Void> deleteEmployeur(@PathVariable int id) {
+        referentielService.deleteEmployeur(id);
         return ResponseEntity.noContent().build();
     }
 }

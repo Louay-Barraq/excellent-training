@@ -39,8 +39,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         // Responsable + Admin
                         .requestMatchers("/api/stats/**").hasAnyRole("RESPONSABLE", "ADMINISTRATEUR")
-                        // Admin uniquement
+                        // Admin uniquement (User management)
                         .requestMatchers("/api/utilisateurs/**").hasRole("ADMINISTRATEUR")
+                        
+                        // Referentiels: Read for all, Write for Admin
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/referentiels/**").authenticated()
                         .requestMatchers("/api/referentiels/**").hasRole("ADMINISTRATEUR")
                         // Utilisateur + Admin
                         .requestMatchers("/api/formations/**").hasAnyRole("UTILISATEUR", "ADMINISTRATEUR")
