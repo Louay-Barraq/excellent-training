@@ -7,6 +7,7 @@ const errorMessages = {
     'INVALID_CREDENTIALS': 'Identifiants incorrects ou accès non autorisé.',
     'ACCOUNT_DISABLED': 'Ce compte a été désactivé. Veuillez contacter l\'administrateur.',
     'ACCESS_DENIED': 'Vous n\'avez pas les permissions nécessaires pour cette action.',
+    'UNAUTHORIZED': 'Session invalide ou expirée. Veuillez vous reconnecter.',
     'NOT_FOUND': 'Ressource introuvable dans le système.',
     'BAD_REQUEST': 'Requête invalide. Veuillez vérifier les données saisies.',
     'VALIDATION_ERROR': 'Certaines informations sont invalides. Veuillez vérifier les champs.',
@@ -24,6 +25,7 @@ const errorMessages = {
     '401': 'Session expirée. Veuillez vous reconnecter.',
     '403': 'Accès refusé.',
     '404': 'Ressource introuvable sur le serveur.',
+    '409': 'Cette action ne peut pas être réalisée dans l\'état actuel des données.',
     '500': 'Une erreur interne du serveur est survenue. Veuillez réessayer plus tard.',
     'DEFAULT': 'Une erreur inattendue est survenue.'
 };

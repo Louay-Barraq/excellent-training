@@ -8,6 +8,7 @@ import {
 import Layout from '../../components/Layout';
 import Skeleton from '../../components/Skeleton';
 import { api } from '../../services/api';
+import { mapError } from '../../utils/errorMapper';
 import PageHeader from '../../components/PageHeader';
 
 // ─────────────────────────────────────────────────────────────
@@ -262,7 +263,7 @@ export default function DashboardPage() {
   useEffect(() => {
     api.get('/stats/dashboard')
       .then(setStats)
-      .catch(() => setError('Impossible de charger les statistiques'))
+      .catch((err) => setError(mapError(err)))
       .finally(() => setLoading(false));
   }, []);
 

@@ -10,7 +10,6 @@ import FormationsPage from './pages/utilisateur/FormationsPage';
 import FormateursPage from './pages/utilisateur/FormateursPage';
 import ParticipantsPage from './pages/utilisateur/ParticipantsPage';
 import DashboardPage from './pages/responsable/DashboardPage';
-import UtilisateurDashboardPage from './pages/utilisateur/DashboardPage';
 import UtilisateursPage from './pages/admin/UtilisateursPage';
 import ReferentielsPage from './pages/admin/ReferentielsPage';
 
@@ -46,7 +45,6 @@ const HomeRedirect = () => {
 
 const App = () => {
     const location = useLocation();
-    const { user } = useAuth();
     
     return (
         <AnimatePresence mode="wait">
@@ -73,10 +71,7 @@ const App = () => {
                 } />
                 <Route path="/:role/dashboard" element={
                     <ProtectedRoute allowedRoles={['UTILISATEUR', 'RESPONSABLE', 'ADMINISTRATEUR']}>
-                        {user?.role === 'UTILISATEUR' 
-                            ? <AnimatedPage><UtilisateurDashboardPage /></AnimatedPage>
-                            : <AnimatedPage><DashboardPage /></AnimatedPage>
-                        }
+                        <AnimatedPage><DashboardPage /></AnimatedPage>
                     </ProtectedRoute>
                 } />
                 <Route path="/:role/utilisateurs" element={

@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
+import { mapError } from '../../utils/errorMapper';
 import { Shield, AlertCircle, ArrowRight, User, Lock, Building2 } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
 
 const LoginPage = () => {
   const [form, setForm] = useState({ login: '', password: '' });
@@ -11,7 +11,6 @@ const LoginPage = () => {
   const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
   const { loginUser } = useAuth();
-  const { theme } = useTheme();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,10 +34,9 @@ const LoginPage = () => {
       loginUser(data);
       if (data.role === 'ADMINISTRATEUR') navigate('/admin/utilisateurs');
       else if (data.role === 'RESPONSABLE') navigate('/responsable/dashboard');
-      else navigate('/utilisateur/formations');
+      else navigate('/utilisateur/dashboard');
     } catch (err) {
-      console.error(err);
-      setError('Identifiants incorrects ou accès non autorisé.');
+      setError(mapError(err));
     } finally {
       setLoading(false);
     }

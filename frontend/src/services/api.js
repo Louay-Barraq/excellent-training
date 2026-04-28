@@ -15,7 +15,25 @@ const handleResponse = async (response) => {
             localStorage.clear();
             window.location.href = '/login';
         }
-        const errorData = await response.json().catch(() => ({ message: 'Une erreur est survenue' }));
+        let errorData = null;
+        try {
+            errorData = await response.json();
+        } catch {
+            // Keep UI messaging structured even when backend returns plain text/empty body.
+            errorData = {
+                code: String(response.status),
+                message: response.statusText || 'Une erreur est survenue'
+            };
+        }
+        if (!errorData || typeof errorData !== 'object') {
+            errorData = {
+                code: String(response.status),
+                message: 'Une erreur est survenue'
+            };
+        }
+        if (!errorData.status) {
+            errorData.status = response.status;
+        }
         throw errorData;
     }
     if (response.status === 204) return null;

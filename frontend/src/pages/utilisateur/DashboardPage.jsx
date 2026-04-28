@@ -7,6 +7,7 @@ import {
 import Layout from '../../components/Layout';
 import Skeleton from '../../components/Skeleton';
 import { api } from '../../services/api';
+import { mapError } from '../../utils/errorMapper';
 import PageHeader from '../../components/PageHeader';
 
 const StatCard = ({ icon: Icon, title, value, color }) => (
@@ -48,7 +49,7 @@ const DashboardPage = () => {
     // We use the same stats endpoint but filter or present differently
     api.get('/stats/dashboard')
       .then(setStats)
-      .catch(() => setError('Impossible de charger les statistiques'))
+      .catch((err) => setError(mapError(err)))
       .finally(() => setLoading(false));
   }, []);
 
