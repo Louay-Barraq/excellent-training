@@ -26,6 +26,7 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsServiceImpl userDetailsService;
+    private final RestAuthenticationHandlers restAuthenticationHandlers;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -34,11 +35,14 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(restAuthenticationHandlers)
+                        .accessDeniedHandler(restAuthenticationHandlers))
                 .authorizeHttpRequests(auth -> auth
                         // Public
                         .requestMatchers("/api/auth/**").permitAll()
-                        // Responsable + Admin
-                        .requestMatchers("/api/stats/**").hasAnyRole("RESPONSABLE", "ADMINISTRATEUR")
+                        // Utilisateur + Responsable + Admin
+                        .requestMatchers("/api/stats/**").hasAnyRole("UTILISATEUR", "RESPONSABLE", "ADMINISTRATEUR")
                         // Admin uniquement (User management)
                         .requestMatchers("/api/utilisateurs/**").hasRole("ADMINISTRATEUR")
                         

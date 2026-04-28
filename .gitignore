@@ -8,6 +8,10 @@
 *.iml
 *.iws
 
+# Documentation
+documentation/Design/
+documentation/CdC/
+
 # Maven
 backend-spring/target/
 
@@ -18,3 +22,8 @@ frontend-react/dist/
 # Env
 .env
 *.env.local
+
+# Other
+config.json
+directory_summary.txt
+gen.py

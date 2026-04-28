@@ -51,11 +51,9 @@ public class ReferentielService {
             throw new EntityNotFoundException(
                     "Domaine introuvable avec l'id : " + id);
         }
-        // Force Delete: Unlink from formations
-        List<Formation> formations = formationRepository.findByDomaineId(id);
-        for (Formation f : formations) {
-            f.setDomaine(null);
-            formationRepository.save(f);
+        if (formationRepository.existsByDomaineId(id)) {
+            throw new IllegalArgumentException(
+                    "Impossible de supprimer ce domaine car il est associe a une ou plusieurs formations.");
         }
         domaineRepository.deleteById(id);
     }
@@ -87,12 +85,10 @@ public class ReferentielService {
     public void deleteStructure(int id) {
         if (!structureRepository.existsById(id))
             throw new EntityNotFoundException("Structure introuvable avec l'id : " + id);
-        
-        // Force Delete: Unlink from participants
-        List<Participant> participants = participantRepository.findByStructureId(id);
-        for (Participant p : participants) {
-            p.setStructure(null);
-            participantRepository.save(p);
+
+        if (participantRepository.existsByStructureId(id)) {
+            throw new IllegalArgumentException(
+                    "Impossible de supprimer cette structure car des participants y sont rattachés.");
         }
         structureRepository.deleteById(id);
     }
@@ -125,12 +121,10 @@ public class ReferentielService {
     public void deleteProfil(int id) {
         if (!profilRepository.existsById(id))
             throw new EntityNotFoundException("Profil introuvable avec l'id : " + id);
-        
-        // Force Delete: Unlink from participants
-        List<Participant> participants = participantRepository.findByProfilId(id);
-        for (Participant p : participants) {
-            p.setProfil(null);
-            participantRepository.save(p);
+
+        if (participantRepository.existsByProfilId(id)) {
+            throw new IllegalArgumentException(
+                    "Impossible de supprimer ce profil car des participants y sont rattachés.");
         }
         profilRepository.deleteById(id);
     }
@@ -162,12 +156,10 @@ public class ReferentielService {
     public void deleteEmployeur(int id) {
         if (!employeurRepository.existsById(id))
             throw new EntityNotFoundException("Employeur introuvable with id : " + id);
-        
-        // Force Delete: Unlink from formateurs
-        List<Formateur> formateurs = formateurRepository.findByEmployeurId(id);
-        for (Formateur f : formateurs) {
-            f.setEmployeur(null);
-            formateurRepository.save(f);
+
+        if (formateurRepository.existsByEmployeurId(id)) {
+            throw new IllegalArgumentException(
+                    "Impossible de supprimer cet employeur car des formateurs y sont rattachés.");
         }
         employeurRepository.deleteById(id);
     }
