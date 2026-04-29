@@ -8,9 +8,9 @@ const getHeaders = () => {
     };
 };
 
-const handleResponse = async (response) => {
+const handleResponse = async (response, endpoint) => {
     if (!response.ok) {
-        if (response.status === 401) {
+        if (response.status === 401 && !endpoint.endsWith("/login")) {
             sessionStorage.setItem('auth_reason', 'expired');
             localStorage.clear();
             window.location.href = '/login';
@@ -45,7 +45,7 @@ export const api = {
         const response = await fetch(`${BASE_URL}${endpoint}`, {
             headers: getHeaders(),
         });
-        return handleResponse(response);
+        return handleResponse(response, endpoint);
     },
 
     post: async (endpoint, body) => {
@@ -54,7 +54,7 @@ export const api = {
             headers: getHeaders(),
             body: JSON.stringify(body),
         });
-        return handleResponse(response);
+        return handleResponse(response, endpoint);
     },
 
     put: async (endpoint, body) => {
@@ -63,7 +63,7 @@ export const api = {
             headers: getHeaders(),
             body: JSON.stringify(body),
         });
-        return handleResponse(response);
+        return handleResponse(response, endpoint);
     },
 
     delete: async (endpoint) => {
@@ -71,6 +71,6 @@ export const api = {
             method: 'DELETE',
             headers: getHeaders(),
         });
-        return handleResponse(response);
+        return handleResponse(response, endpoint);
     },
 };
