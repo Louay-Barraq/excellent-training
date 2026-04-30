@@ -29,12 +29,12 @@ déclencher.
 ```mermaid
 flowchart LR
   %% ── Acteurs ──────────────────────────────────────────────────────────────
-  U(["👤 Utilisateur"])
-  R(["👤 Responsable"])
-  A(["👤 Administrateur"])
+  U(["Utilisateur"])
+  R(["Responsable"])
+  A(["Administrateur"])
 
   %% ── Frontière du système ─────────────────────────────────────────────────
-  subgraph SYS ["🖥️  Système — Excellent Training"]
+  subgraph SYS ["Système — Excellent Training"]
     direction TB
 
     %% Cas commun
@@ -46,7 +46,7 @@ flowchart LR
       UF(["Gérer les formations"])
       UFA(["Affecter un formateur"])
       UI(["Inscrire un participant"])
-      UPrint(["Imprimer liste de présence"])
+      %% UPrint(["Imprimer liste de présence"])
       UFO(["Gérer les formateurs"])
       UP(["Gérer les participants"])
     end
@@ -85,7 +85,7 @@ flowchart LR
   %% ── Relations entre cas d'utilisation ────────────────────────────────────
   UF -- "«extend»" --> UFA
   UF -- "«extend»" --> UI
-  UF -- "«extend»" --> UPrint
+  %% UF -- "«extend»" --> UPrint
   DASH -- "«extend»" --> FILT
 
   AUTH -. "«include»" .-> UF

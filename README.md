@@ -11,6 +11,7 @@
 - [Architecture du projet](#architecture-du-projet)
 - [Prérequis](#prérequis)
 - [Installation et lancement](#installation-et-lancement)
+- [Tester l'application — Données de démonstration](#tester-lapplication--données-de-démonstration)
 - [Structure de la base de données](#structure-de-la-base-de-données)
 - [Acteurs et permissions](#acteurs-et-permissions)
 - [Endpoints API](#endpoints-api)
@@ -143,6 +144,78 @@ npm run dev
 ```
 
 > Frontend disponible sur : `http://localhost:5173`
+
+---
+
+## Tester l'application — Données de démonstration
+
+Cette section explique comment initialiser la base de données avec un jeu de données complet
+et accéder à l'application avec les trois rôles disponibles.
+
+### Étape 1 — Créer le schéma (si nécessaire)
+
+Spring Boot crée les tables automatiquement au premier lancement grâce à JPA/Hibernate
+(`spring.jpa.hibernate.ddl-auto=update`).
+
+Si tu préfères créer le schéma manuellement :
+
+```bash
+mysql -u root -p < database/schema.sql
+```
+
+### Étape 2 — Peupler la base de données
+
+Exécute le fichier `database/data.sql` pour insérer le jeu de données de démonstration
+(rôles, domaines, structures, profils, formateurs, participants, formations et inscriptions).
+**Les comptes utilisateurs avec mots de passe déjà hachés (BCrypt) sont inclus dans ce fichier.**
+
+```bash
+mysql -u root -p < database/data.sql
+```
+
+Ou via un client MySQL (MySQL Workbench, DBeaver, etc.) : ouvre et exécute directement le fichier.
+
+### Étape 3 — Se connecter à l'application
+
+Les trois comptes de test suivants sont créés automatiquement par le script SQL.
+**Aucune manipulation de hash n'est nécessaire.**
+
+| Login | Mot de passe | Rôle | Accès |
+|---|---|---|---|
+| `admin` | `admin123` | ADMINISTRATEUR | Gestion des comptes utilisateurs + référentiels + tout le reste |
+| `responsable` | `admin123` | RESPONSABLE | Tableau de bord statistique (lecture seule) |
+| `utilisateur` | `admin123` | UTILISATEUR | Gestion des formations, formateurs et participants |
+
+> **URL de l'application :** `http://localhost:5173`
+
+---
+
+### Changer les mots de passe (optionnel)
+
+Si tu souhaites définir un mot de passe différent, utilise la classe utilitaire
+`backend/src/main/java/com/greenbuilding/excellenttraining/security/PasswordGenerator.java`.
+
+**1. Lancer le générateur avec le mot de passe souhaité :**
+
+```bash
+cd backend
+./mvnw compile exec:java \
+  -Dexec.mainClass="com.greenbuilding.excellenttraining.security.PasswordGenerator" \
+  -Dexec.args="monNouveauMotDePasse"
+```
+
+Le hash BCrypt est affiché dans la console. Exemple de sortie :
+```
+$2a$10$Xl0yhvzLIaJjlLnt...
+```
+
+**2. Mettre à jour le compte dans la base :**
+
+```sql
+UPDATE utilisateur
+SET password = '$2a$10$Xl0yhvzLIaJjlLnt...'
+WHERE login = 'admin';
+```
 
 ---
 
