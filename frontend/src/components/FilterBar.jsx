@@ -55,6 +55,7 @@ const FilterBar = ({
     });
 
     onFilter(filtered);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, activeFilters, data]);
 
   const handleFilterChange = (key, value) => {

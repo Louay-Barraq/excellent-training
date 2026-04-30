@@ -10,6 +10,7 @@ Diagrammes de conception du système de gestion de formation du centre Excellent
 
 | # | Fichier | Type | Description |
 |---|---|---|---|
+| 0 | [00-cas-utilisation.md](./00-cas-utilisation.md) | Cas d'utilisation | Vue générale — tous les acteurs et cas d'utilisation |
 | 1 | [01-classe.md](./01-classe.md) | Diagramme de classes | Toutes les entités et leurs relations |
 | 2 | [02-auth.md](./02-auth.md) | Séquence | Authentification & Autorisation (JWT) |
 | 3 | [03-creation-formation.md](./03-creation-formation.md) | Séquence | Création d'une Formation |

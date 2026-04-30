@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Plus, Search, Pencil, Trash2, UserPlus, UserMinus,
   BookOpen, ChevronRight, X, Calendar, Clock,
@@ -12,6 +12,8 @@ import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { mapError } from '../../utils/errorMapper';
 import FilterBar from '../../components/FilterBar';
+import ConfirmModal from '../../components/ConfirmModal';
+import Pagination from '../../components/Pagination';
 import { motion } from 'framer-motion';
 
 const EMPTY_FORM = {
@@ -49,13 +51,21 @@ export default function FormationsPage() {
   const [selectedFormation, setSelectedFormation] = useState(null);
   const [selectedFormateurId, setSelectedFormateurId] = useState('');
   const [selectedPIds, setSelectedPIds]           = useState([]);
-  const [inscrits, setInscrits]                   = useState([]);
-  const [formParticipantIds, setFormParticipantIds] = useState([]);
+  // inscritIds: IDs only — used in the Inscribe modal to check enrollment
+  const [inscritIds, setInscritIds]                   = useState([]);
+  // detailParticipants: full objects — used in the Detail modal
+  const [detailParticipants, setDetailParticipants]   = useState([]);
+  const [formParticipantIds, setFormParticipantIds]   = useState([]);
   const [initialParticipantIds, setInitialParticipantIds] = useState([]);
+  // Pagination
+  const [page, setPage]                               = useState(1);
+  const [pageSize, setPageSize]                       = useState(15);
+  // Delete confirmation
+  const [confirmDeleteId, setConfirmDeleteId]         = useState(null);
   const [participantsDropdownOpen, setParticipantsDropdownOpen] = useState(false);
 
   // ── Load ─────────────────────────────────────────────────────
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const [f, d, fmt, p] = await Promise.all([
         api.get('/formations'),
@@ -67,8 +77,8 @@ export default function FormationsPage() {
       setFormateurs(fmt); setParticipants(p);
     } catch (err) { addToast(mapError(err), 'error'); }
     finally { setLoading(false); }
-  };
-  useEffect(() => { load(); }, []);
+  }, [addToast]);
+  useEffect(() => { load(); }, [load]);
 
   const closeModal = () => {
     setModal(null);
@@ -158,8 +168,10 @@ export default function FormationsPage() {
     finally { setSubmitting(false); }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Supprimer cette formation définitivement ?')) return;
+  const handleDelete = (id) => setConfirmDeleteId(id);
+  const executeDelete = async () => {
+    const id = confirmDeleteId;
+    setConfirmDeleteId(null);
     try {
       await api.delete(`/formations/${id}`);
       addToast('Formation supprimée', 'success'); load();
@@ -185,8 +197,8 @@ export default function FormationsPage() {
     setSelectedFormation(f); setSelectedPIds([]);
     try {
       const ins = await api.get(`/formations/${f.id}/participants`);
-      setInscrits(ins.map(p => p.id));
-    } catch { setInscrits([]); }
+      setInscritIds(ins.map(p => p.id));
+    } catch { setInscritIds([]); }
     setModal('inscribe');
   };
   const toggleP = (id) =>
@@ -203,7 +215,7 @@ export default function FormationsPage() {
   const handleDesinscrire = async (pId) => {
     try {
       await api.delete(`/formations/${selectedFormation.id}/participants/${pId}`);
-      setInscrits(prev => prev.filter(id => id !== pId));
+      setInscritIds(prev => prev.filter(id => id !== pId));
       addToast('Participant désinscrit', 'success'); load();
     } catch (err) { addToast(mapError(err), 'error'); }
   };
@@ -213,8 +225,8 @@ export default function FormationsPage() {
     setSelectedFormation(f);
     try {
       const ins = await api.get(`/formations/${f.id}/participants`);
-      setInscrits(ins);
-    } catch { setInscrits([]); }
+      setDetailParticipants(ins);
+    } catch { setDetailParticipants([]); }
     setModal('detail');
   };
 
@@ -233,6 +245,10 @@ export default function FormationsPage() {
       .filter(Boolean)
       .slice(0, 2)
   ), [formParticipantIds, participantsById]);
+
+  const pagedFormations = useMemo(() =>
+    filteredFormations.slice((page - 1) * pageSize, page * pageSize),
+  [filteredFormations, page, pageSize]);
 
   return (
     <Layout>
@@ -257,7 +273,7 @@ export default function FormationsPage() {
       <FilterBar 
         data={formations}
         searchKeys={['titre', 'domaineLibelle', 'formateurNomComplet']}
-        onFilter={setFilteredFormations}
+        onFilter={(data) => { setFilteredFormations(data); setPage(1); }}
         placeholder="Rechercher par titre, domaine ou formateur..."
         filterConfigs={[
           { key: 'domaineLibelle', label: 'Domaine', options: domaineOptions },
@@ -284,8 +300,7 @@ export default function FormationsPage() {
       ) : (
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
           className="bg-[var(--color-bg-main)] border border-[var(--color-border)] rounded-2xl overflow-hidden shadow-sm"
         >
           <div className="overflow-x-auto">
@@ -300,15 +315,14 @@ export default function FormationsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredFormations.map((f, i) => (
+                {pagedFormations.map((f, i) => (
                   <motion.tr 
                     key={f.id}
                     initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
+                    animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
                     className={`border-b border-[var(--color-border)] hover:bg-[var(--color-bg-secondary)] transition-colors
-                      ${i === filteredFormations.length - 1 ? 'border-0' : ''}`}
+                      ${i === pagedFormations.length - 1 ? 'border-0' : ''}`}
                   >
                     <td className="px-4 py-4">
                       <button onClick={() => openDetail(f)}
@@ -393,6 +407,13 @@ export default function FormationsPage() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            total={filteredFormations.length}
+            page={page}
+            pageSize={pageSize}
+            onPage={setPage}
+            onPageSize={setPageSize}
+          />
         </motion.div>
       )}
 
@@ -638,13 +659,13 @@ export default function FormationsPage() {
             <div className="p-6 space-y-4">
 
               {/* Inscrits */}
-              {inscrits.length > 0 && (
+              {inscritIds.length > 0 && (
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-2">
-                    Déjà inscrits ({inscrits.length})
+                    Déjà inscrits ({inscritIds.length})
                   </p>
                   <div className="space-y-1.5 max-h-32 overflow-y-auto">
-                    {participants.filter(p => inscrits.includes(p.id)).map(p => (
+                    {participants.filter(p => inscritIds.includes(p.id)).map(p => (
                       <div key={p.id}
                         className="flex justify-between items-center bg-green-500/5 border border-green-500/20 rounded-xl px-3 py-2">
                         <div>
@@ -667,10 +688,10 @@ export default function FormationsPage() {
                   Sélectionner pour inscrire
                 </p>
                 <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                  {participants.filter(p => !inscrits.includes(p.id)).length === 0 ? (
+                  {participants.filter(p => !inscritIds.includes(p.id)).length === 0 ? (
                     <p className="text-xs text-[var(--color-text-muted)] italic text-center py-3">Tous les participants sont inscrits</p>
                   ) : (
-                    participants.filter(p => !inscrits.includes(p.id)).map(p => (
+                    participants.filter(p => !inscritIds.includes(p.id)).map(p => (
                       <label key={p.id}
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all border
                           ${selectedPIds.includes(p.id)
@@ -758,10 +779,10 @@ export default function FormationsPage() {
 
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-2">
-                  Participants inscrits ({Array.isArray(inscrits) ? inscrits.length : 0})
+                  Participants inscrits ({detailParticipants.length})
                 </p>
                 <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                  {Array.isArray(inscrits) && inscrits.length > 0 ? inscrits.map(p => (
+                  {detailParticipants.length > 0 ? detailParticipants.map(p => (
                     <div key={p.id}
                       className="flex justify-between items-center bg-[var(--color-bg-secondary)] rounded-xl px-3 py-2">
                       <span className="text-sm font-medium text-[var(--color-text-primary)]">{p.nom} {p.prenom}</span>
@@ -782,6 +803,13 @@ export default function FormationsPage() {
           </div>
         </div>
       )}
+      <ConfirmModal
+        isOpen={confirmDeleteId !== null}
+        title="Supprimer la formation"
+        message="Cette action est irréversible. Voulez-vous vraiment supprimer cette formation définitivement ?"
+        onConfirm={executeDelete}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </Layout>
   );
 }

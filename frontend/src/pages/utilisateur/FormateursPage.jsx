@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, useCallback, useMemo } from 'react';
 import { api } from '../../services/api';
 import Layout from '../../components/Layout';
 import { SkeletonTable } from '../../components/Skeleton';
@@ -7,6 +7,8 @@ import { Search, Plus, Trash2, Edit2, Check, X, Mail, Phone, Building2, Briefcas
 import { useToast } from '../../context/ToastContext';
 import { errorMapper } from '../../utils/errorMapper';
 import FilterBar from '../../components/FilterBar';
+import ConfirmModal from '../../components/ConfirmModal';
+import Pagination from '../../components/Pagination';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 
@@ -258,13 +260,13 @@ const FormateursPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExpert, setEditingExpert] = useState(null);
   const [filteredFormateursData, setFilteredFormateursData] = useState([]);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const { addToast } = useToast();
   const { user } = useAuth();
-  useEffect(() => {
-    fetchData();
-  }, [addToast]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [fData, eData] = await Promise.all([
         api.get('/formateurs'),
@@ -278,22 +280,31 @@ const FormateursPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [addToast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const pagedFormateurs = useMemo(() =>
+    filteredFormateursData.slice((page - 1) * pageSize, page * pageSize),
+  [filteredFormateursData, page, pageSize]);
 
   const handleEdit = (expert) => {
     setEditingExpert(expert);
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet expert ?')) {
-      try {
-        await api.delete(`/formateurs/${id}`);
-        setFormateurs(prev => prev.filter(f => f.id !== id));
-        addToast('Expert supprimé avec succès', 'success');
-      } catch (err) {
-        addToast(errorMapper.mapError(err), 'error');
-      }
+  const handleDelete = (id) => setConfirmDeleteId(id);
+  const executeDelete = async () => {
+    const id = confirmDeleteId;
+    setConfirmDeleteId(null);
+    try {
+      await api.delete(`/formateurs/${id}`);
+      setFormateurs(prev => prev.filter(f => f.id !== id));
+      addToast('Expert supprimé avec succès', 'success');
+    } catch (err) {
+      addToast(errorMapper.mapError(err), 'error');
     }
   };
 
@@ -317,8 +328,7 @@ const FormateursPage = () => {
           <div className="flex items-center gap-3">
             <motion.div 
               initial={{ scale: 0.8, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              viewport={{ once: true }}
+              animate={{ scale: 1, opacity: 1 }}
               className="w-12 h-12 bg-cyan-500/10 rounded-2xl flex items-center justify-center text-cyan-500 border border-cyan-500/20 shadow-inner"
             >
               <Award size={24} strokeWidth={1.5} />
@@ -355,8 +365,7 @@ const FormateursPage = () => {
           <motion.div 
             key={m.label}
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
             className={`card-prism p-6 group hover:border-${m.color}-500/30 transition-all duration-500`}
           >
@@ -380,7 +389,7 @@ const FormateursPage = () => {
         <FilterBar 
           data={formateurs}
           searchKeys={['nom', 'prenom', 'email', 'nomEmployeur']}
-          onFilter={setFilteredFormateursData}
+          onFilter={(data) => { setFilteredFormateursData(data); setPage(1); }}
           placeholder="Rechercher par nom, email, employeur..."
           filterConfigs={[
             { key: 'type', label: 'Type', options: typeOptions },
@@ -399,8 +408,7 @@ const FormateursPage = () => {
         ) : (
           <motion.div 
             initial={{ opacity: 0, scale: 0.99 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, scale: 1 }}
             className="card-prism overflow-hidden shadow-sm"
           >
             <div className="overflow-x-auto">
@@ -414,12 +422,11 @@ const FormateursPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--color-border)]">
-                  {filteredFormateursData.map((f, idx) => (
+                  {pagedFormateurs.map((f, idx) => (
                     <motion.tr 
                       key={f.id} 
                       initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
+                      animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: idx * 0.05 }}
                       className="hover:bg-[var(--color-surface-hover)]/30 transition-colors group"
                     >
@@ -486,6 +493,13 @@ const FormateursPage = () => {
                 </tbody>
               </table>
             </div>
+            <Pagination
+              total={filteredFormateursData.length}
+              page={page}
+              pageSize={pageSize}
+              onPage={setPage}
+              onPageSize={setPageSize}
+            />
             <div className="p-6 border-t border-[var(--color-border)] bg-[var(--color-surface-hover)]/20 flex justify-between items-center text-xs text-[var(--color-text-muted)] font-medium">
                <span>Affichage de {filteredFormateursData.length} experts certifiés</span>
                <span className="uppercase tracking-widest opacity-50 font-bold">Excellent Training Expert Registry</span>
@@ -500,6 +514,13 @@ const FormateursPage = () => {
         onFinish={fetchData}
         employeurs={employeurs}
         initialData={editingExpert}
+      />
+      <ConfirmModal
+        isOpen={confirmDeleteId !== null}
+        title="Supprimer le formateur"
+        message="Ce formateur sera définitivement supprimé. Cette action est irréversible."
+        onConfirm={executeDelete}
+        onCancel={() => setConfirmDeleteId(null)}
       />
     </Layout>
   );

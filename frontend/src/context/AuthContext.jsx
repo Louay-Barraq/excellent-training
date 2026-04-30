@@ -23,7 +23,7 @@ const parseJwt = (token) => {
 const isTokenExpired = (token) => {
     const payload = parseJwt(token);
     const exp = payload?.exp;
-    if (!exp) return false; // if missing, let backend decide
+    if (!exp) return true; // missing exp → treat as expired for safety
     return Date.now() >= exp * 1000;
 };
 

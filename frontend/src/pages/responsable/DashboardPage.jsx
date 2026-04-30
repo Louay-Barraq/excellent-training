@@ -201,8 +201,7 @@ const Heatmap = ({ data, rowKey, colKey, valueKey }) => {
 const KpiCard = ({ icon: Icon, title, value, sub, iconBg }) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-50px" }}
+    animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.4 }}
     className="rounded-2xl p-5 border border-[var(--color-border)] bg-[var(--color-bg-main)] shadow-sm hover:shadow-md transition-shadow"
   >
@@ -218,8 +217,7 @@ const KpiCard = ({ icon: Icon, title, value, sub, iconBg }) => (
 const SectionCard = ({ icon: Icon, title, color, children, action }) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-50px" }}
+    animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
     className="bg-[var(--color-bg-main)] border border-[var(--color-border)] rounded-2xl p-5 shadow-sm"
   >
@@ -391,8 +389,7 @@ export default function DashboardPage() {
       {topDomaine && (
         <motion.div 
           initial={{ opacity: 0, scale: 0.98 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, scale: 1 }}
           className="bg-[var(--color-bg-main)] border border-indigo-500/20 rounded-2xl px-5 py-4 mb-2 flex items-center gap-4 shadow-sm"
         >
           <div className="p-2.5 bg-indigo-500/10 rounded-xl text-indigo-500 flex-shrink-0"><Award size={20} /></div>

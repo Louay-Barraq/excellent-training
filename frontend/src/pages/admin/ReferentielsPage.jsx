@@ -7,6 +7,7 @@ import { SkeletonList } from '../../components/Skeleton';
 import EmptyState from '../../components/EmptyState';
 import { useToast } from '../../context/ToastContext';
 import { mapError } from '../../utils/errorMapper';
+import ConfirmModal from '../../components/ConfirmModal';
 
 import { Search } from 'lucide-react';
 
@@ -27,8 +28,7 @@ const ReferentielTable = ({ title, type, items, icon: Icon, loading, accentColor
     return (
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className="card-prism flex flex-col h-full transition-all duration-500 hover:shadow-2xl hover:shadow-black/5"
         >
@@ -90,7 +90,6 @@ const ReferentielTable = ({ title, type, items, icon: Icon, loading, accentColor
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
-                                    viewport={{ once: true }}
                                     transition={{ delay: idx % 10 * 0.05 }}
                                     className="flex justify-between items-center p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-main)]/50 hover:bg-[var(--color-surface-hover)] hover:border-indigo-500/30 transition-all group"
                                 >
@@ -137,6 +136,8 @@ const ReferentielsPage = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [modalData, setModalData] = useState({ type: '', title: '', item: null, value: '' });
     const [submitting, setSubmitting] = useState(false);
+    // confirmDelete = null | { type, id } — stores which referential item to delete
+    const [confirmDelete, setConfirmDelete] = useState(null);
 
     const fetchData = () => {
         setLoading(true);
@@ -174,9 +175,10 @@ const ReferentielsPage = () => {
         setModalOpen(true);
     };
 
-    const handleDelete = async (type, id) => {
-        if (!window.confirm('Voulez-vous vraiment supprimer cet élément ?')) return;
-
+    const handleDelete = (type, id) => setConfirmDelete({ type, id });
+    const executeDelete = async () => {
+        const { type, id } = confirmDelete;
+        setConfirmDelete(null);
         try {
             await api.delete(`/referentiels/${type}/${id}`);
             addToast('Élément supprimé avec succès', 'success');
@@ -343,6 +345,13 @@ const ReferentielsPage = () => {
                 </div>
                 )}
             </AnimatePresence>
+            <ConfirmModal
+                isOpen={confirmDelete !== null}
+                title="Supprimer cet élément"
+                message="Cet élément de référentiel sera définitivement supprimé."
+                onConfirm={executeDelete}
+                onCancel={() => setConfirmDelete(null)}
+            />
         </Layout>
     );
 };

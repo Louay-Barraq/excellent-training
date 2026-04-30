@@ -1,4 +1,4 @@
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const roleSlugMap = {
@@ -10,6 +10,7 @@ const roleSlugMap = {
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user } = useAuth();
   const { role: urlRole } = useParams();
+  const location = useLocation();
 
   if (!user) return <Navigate to="/login" replace />;
 

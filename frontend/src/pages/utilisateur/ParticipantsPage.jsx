@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../../services/api';
 import Layout from '../../components/Layout';
 import { SkeletonTable } from '../../components/Skeleton';
@@ -7,6 +7,8 @@ import { Plus, Users, Building2, UserCircle, Edit2, Trash2, Search, Filter, X, M
 import { mapError } from '../../utils/errorMapper';
 import { useToast } from '../../context/ToastContext';
 import FilterBar from '../../components/FilterBar';
+import ConfirmModal from '../../components/ConfirmModal';
+import Pagination from '../../components/Pagination';
 import { motion } from 'framer-motion';
 
 const ParticipantsPage = () => {
@@ -22,6 +24,9 @@ const ParticipantsPage = () => {
   const [detailParticipant, setDetailParticipant] = useState(null);
   const [detailFormations, setDetailFormations] = useState([]);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const { addToast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -34,7 +39,7 @@ const ParticipantsPage = () => {
     profilId: ''
   });
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [pData, sData, prData] = await Promise.all([
@@ -50,11 +55,15 @@ const ParticipantsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [addToast]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
+
+  const pagedParticipants = useMemo(() =>
+    filteredParticipantsData.slice((page - 1) * pageSize, page * pageSize),
+  [filteredParticipantsData, page, pageSize]);
 
   useEffect(() => {
     if (editingParticipant) {
@@ -133,15 +142,17 @@ const ParticipantsPage = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-      if (!window.confirm('Voulez-vous vraiment supprimer ce participant ?')) return;
-      try {
-          await api.delete(`/participants/${id}`);
-          addToast('Participant supprimé', 'success');
-          fetchData();
-      } catch (err) {
-          addToast(mapError(err), 'error');
-      }
+  const handleDelete = (id) => setConfirmDeleteId(id);
+  const executeDelete = async () => {
+    const id = confirmDeleteId;
+    setConfirmDeleteId(null);
+    try {
+      await api.delete(`/participants/${id}`);
+      addToast('Participant supprimé', 'success');
+      fetchData();
+    } catch (err) {
+      addToast(mapError(err), 'error');
+    }
   };
 
   const structureOptions = Array.from(new Set(participants.map(p => p.structureLibelle).filter(Boolean)))
@@ -161,8 +172,7 @@ const ParticipantsPage = () => {
           <div className="flex items-center gap-3">
             <motion.div 
               initial={{ scale: 0.8, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              viewport={{ once: true }}
+              animate={{ scale: 1, opacity: 1 }}
               className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 border border-indigo-500/20 shadow-inner"
             >
               <Users size={24} strokeWidth={1.5} />
@@ -199,8 +209,7 @@ const ParticipantsPage = () => {
           <motion.div 
             key={m.label}
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
             className={`card-prism p-6 group hover:border-${m.color}-500/30 transition-all duration-500`}
           >
@@ -224,7 +233,7 @@ const ParticipantsPage = () => {
         <FilterBar 
           data={participants}
           searchKeys={['nom', 'prenom', 'email', 'structureLibelle', 'profilLibelle']}
-          onFilter={setFilteredParticipantsData}
+          onFilter={(data) => { setFilteredParticipantsData(data); setPage(1); }}
           placeholder="Rechercher par nom, email, structure..."
           filterConfigs={[
             { key: 'structureLibelle', label: 'Structure', options: structureOptions },
@@ -243,8 +252,7 @@ const ParticipantsPage = () => {
         ) : (
           <motion.div 
             initial={{ opacity: 0, scale: 0.99 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, scale: 1 }}
             className="card-prism overflow-hidden shadow-sm"
           >
             <div className="overflow-x-auto">
@@ -258,12 +266,11 @@ const ParticipantsPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--color-border)]">
-                  {filteredParticipantsData.map((p, idx) => (
+                  {pagedParticipants.map((p, idx) => (
                     <motion.tr
                       key={p.id}
                       initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
+                      animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: idx * 0.05 }}
                       onClick={() => openDetail(p)}
                       className="hover:bg-[var(--color-surface-hover)]/30 transition-colors group cursor-pointer"
@@ -310,6 +317,13 @@ const ParticipantsPage = () => {
                 </tbody>
               </table>
             </div>
+            <Pagination
+              total={filteredParticipantsData.length}
+              page={page}
+              pageSize={pageSize}
+              onPage={setPage}
+              onPageSize={setPageSize}
+            />
             <div className="p-6 border-t border-[var(--color-border)] bg-[var(--color-surface-hover)]/20 flex justify-between items-center text-xs text-[var(--color-text-muted)] font-medium">
                <span>Affichage de {filteredParticipantsData.length} participants</span>
                <span className="uppercase tracking-widest opacity-50">Excellent Training</span>
@@ -555,6 +569,13 @@ const ParticipantsPage = () => {
           </div>
         )}
       </div>
+      <ConfirmModal
+        isOpen={confirmDeleteId !== null}
+        title="Supprimer le participant"
+        message="Ce participant sera définitivement supprimé. Cette action est irréversible."
+        onConfirm={executeDelete}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </Layout>
   );
 };

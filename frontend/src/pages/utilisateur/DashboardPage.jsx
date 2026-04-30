@@ -13,8 +13,7 @@ import PageHeader from '../../components/PageHeader';
 const StatCard = ({ icon: Icon, title, value, color }) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
+    animate={{ opacity: 1, y: 0 }}
     className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm hover:shadow-md transition-all group"
   >
     <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${color}`}>
@@ -106,7 +105,7 @@ const DashboardPage = () => {
         <div className="lg:col-span-2 space-y-8">
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            animate={{ opacity: 1, x: 0 }}
             className="p-8 rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden"
           >
             <div className="relative z-10">

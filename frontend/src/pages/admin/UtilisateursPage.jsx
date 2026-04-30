@@ -9,6 +9,7 @@ import { Users, ShieldAlert, Trash2, UserPlus, Fingerprint, X, Loader2, Edit2 } 
 import { useToast } from '../../context/ToastContext';
 import { mapError } from '../../utils/errorMapper';
 import FilterBar from '../../components/FilterBar';
+import ConfirmModal from '../../components/ConfirmModal';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const roleStyle = (role) => {
@@ -27,6 +28,7 @@ const UtilisateursPage = () => {
     const [formLoading, setFormLoading] = useState(false);
     const [formData, setFormData] = useState({ id: null, login: '', password: '', roleId: 3 });
     const [filteredUsers, setFilteredUsers] = useState([]);
+    const [confirmDeleteId, setConfirmDeleteId] = useState(null);
     const { addToast } = useToast();
     const { user, logoutUser } = useAuth();
 
@@ -45,15 +47,16 @@ const UtilisateursPage = () => {
         fetchUsers();
     }, []);
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
-            try {
-                await api.delete(`/utilisateurs/${id}`);
-                addToast('Utilisateur supprimé avec succès', 'success');
-                fetchUsers();
-            } catch (err) {
-                addToast(mapError(err), 'error');
-            }
+    const handleDelete = (id) => setConfirmDeleteId(id);
+    const executeDelete = async () => {
+        const id = confirmDeleteId;
+        setConfirmDeleteId(null);
+        try {
+            await api.delete(`/utilisateurs/${id}`);
+            addToast('Utilisateur supprimé avec succès', 'success');
+            fetchUsers();
+        } catch (err) {
+            addToast(mapError(err), 'error');
         }
     };
 
@@ -141,8 +144,7 @@ const UtilisateursPage = () => {
                         <motion.div 
                             key={s.label}
                             initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
+                            animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.1 }}
                             className="card-prism p-6 flex items-center gap-5 group hover:border-indigo-500/30 transition-all duration-500"
                         >
@@ -182,8 +184,7 @@ const UtilisateursPage = () => {
                 ) : (
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.99 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
+                        animate={{ opacity: 1, scale: 1 }}
                         className="card-prism overflow-hidden shadow-sm"
                     >
                         <div className="p-6 border-b border-[var(--color-border)] bg-[var(--color-surface-hover)]/40 flex items-center justify-between">
@@ -206,8 +207,7 @@ const UtilisateursPage = () => {
                                         <motion.tr 
                                             key={u.id}
                                             initial={{ opacity: 0, x: -10 }}
-                                            whileInView={{ opacity: 1, x: 0 }}
-                                            viewport={{ once: true }}
+                                            animate={{ opacity: 1, x: 0 }}
                                             transition={{ delay: i * 0.05 }}
                                             className="hover:bg-[var(--color-surface-hover)] transition-colors group"
                                         >
@@ -374,6 +374,13 @@ const UtilisateursPage = () => {
                     </div>
                 )}
             </div>
+            <ConfirmModal
+                isOpen={confirmDeleteId !== null}
+                title="Supprimer l'utilisateur"
+                message="Ce compte sera définitivement supprimé. Cette action est irréversible."
+                onConfirm={executeDelete}
+                onCancel={() => setConfirmDeleteId(null)}
+            />
         </Layout>
     );
 };
