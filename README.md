@@ -317,27 +317,8 @@ Tous les diagrammes sont disponibles dans [`documentation/UML/`](./documentation
 
 ---
 
-## Workflow Git
-
-```
-main        ← code stable pour la soutenance
-develop     ← fusion des fonctionnalités terminées
-feat/xxx    ← une branche par fonctionnalité
-```
-
-### Exemples de branches
-```bash
-git checkout -b feat/auth
-git checkout -b feat/crud-formation
-git checkout -b feat/inscription-participant
-git checkout -b feat/dashboard-stats
-```
-
----
-
 ## Informations
 - Binômes : Louay Barraq - Maher Majdoub
 - Niveau : 1ère Année Ingénieur IDL 
 - Institut : **Institut Supérieur d'Informatique (ISI)** — Université de Tunis El Manar  
-- Année Universitaire :**2025/2026**  
-- Date limite de rendu : **30 Avril 2026**
+- Année Universitaire :**2025/2026**
