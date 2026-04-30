@@ -29,6 +29,12 @@ public class UtilisateurService {
                 .toList();
     }
 
+    public Utilisateur findUserByLogin(String login) {
+        return utilisateurRepository.findByLogin(login)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Utilisateur introuvable : " + login));
+    }
+
     public UtilisateurResponseDTO create(UtilisateurDTO dto) {
         if (utilisateurRepository.existsByLogin(dto.getLogin())) {
             throw new IllegalArgumentException(

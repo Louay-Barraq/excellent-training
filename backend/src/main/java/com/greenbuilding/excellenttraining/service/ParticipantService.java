@@ -103,6 +103,12 @@ public class ParticipantService {
             throw new EntityNotFoundException(
                     "Participant introuvable avec l'id : " + id);
         }
+        int formationsCount = formationRepository.findByParticipantsId(id).size();
+        if (formationsCount > 0) {
+            throw new IllegalArgumentException(
+                    "Ce participant est inscrit à " + formationsCount +
+                    " formation(s). Désinscrivez-le avant de le supprimer.");
+        }
         participantRepository.deleteById(id);
     }
 

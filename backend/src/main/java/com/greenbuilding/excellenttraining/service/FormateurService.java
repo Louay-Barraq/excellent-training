@@ -6,6 +6,7 @@ import com.greenbuilding.excellenttraining.model.Employeur;
 import com.greenbuilding.excellenttraining.model.Formateur;
 import com.greenbuilding.excellenttraining.repository.EmployeurRepository;
 import com.greenbuilding.excellenttraining.repository.FormateurRepository;
+import com.greenbuilding.excellenttraining.repository.FormationRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ public class FormateurService {
 
     private final FormateurRepository formateurRepository;
     private final EmployeurRepository employeurRepository;
+    private final FormationRepository formationRepository;
 
     public List<FormateurResponseDTO> findAll() {
         return formateurRepository.findAll()
@@ -93,6 +95,11 @@ public class FormateurService {
         if (!formateurRepository.existsById(id)) {
             throw new EntityNotFoundException(
                     "Formateur introuvable avec l'id : " + id);
+        }
+        if (formationRepository.existsByFormateurId(id)) {
+            throw new IllegalArgumentException(
+                    "Ce formateur est affecté à une ou plusieurs formations. " +
+                    "Veuillez réaffecter ces formations avant de le supprimer.");
         }
         formateurRepository.deleteById(id);
     }
