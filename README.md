@@ -80,9 +80,10 @@ excellent-training/
 │
 ├── documentation/              # Rapport et diagrammes
 │   └── UML/
-│       ├── README.md           # Index des diagrammes
-│       ├── 01-classe.md        # Diagramme de classes
-│       ├── 02-auth.md          # Séquence authentification
+│       ├── README.md                 # Index des diagrammes
+│       ├── 00-cas-utilisation.md     # Diagramme de cas d'utilisation
+│       ├── 01-classe.md              # Diagramme de classes
+│       ├── 02-auth.md                # Séquence authentification
 │       ├── 03-creation-formation.md
 │       ├── 04-affectation-formateur.md
 │       ├── 05-inscription-participant.md
@@ -156,12 +157,6 @@ et accéder à l'application avec les trois rôles disponibles.
 
 Spring Boot crée les tables automatiquement au premier lancement grâce à JPA/Hibernate
 (`spring.jpa.hibernate.ddl-auto=update`).
-
-Si tu préfères créer le schéma manuellement :
-
-```bash
-mysql -u root -p < database/schema.sql
-```
 
 ### Étape 2 — Peupler la base de données
 
