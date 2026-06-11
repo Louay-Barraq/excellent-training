@@ -345,7 +345,7 @@ export default function DashboardPage() {
           iconContainerClassName="bg-indigo-500/10 text-indigo-500 border-indigo-500/20"
           iconClassName="text-indigo-500"
           title="Tableau de bord"
-          subtitle="Vue analytique complète — accès lecture seule"
+          subtitle="Vue analytique complète"
           action={(
             <span
               className="inline-flex items-center gap-1.5 bg-green-500/10 border border-green-500/20
